@@ -1,0 +1,518 @@
+{% extends 'web/layout/manage.html'%}
+{% load static %}
+{% load project %}
+{% block title %}问题详情{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'plugin/editor-md/css/editormd.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugin/bootstrap-datepicker/css/bootstrap-datepicker.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugin/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <style>
+        .editormd-fullscreen{
+            z-index: 1001;
+        }
+        .btn-default .badge-danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+        .badge-danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+        .btn-default .badge-warning {
+            color: #212529;
+            background-color: #ffc107;
+        }
+        .badge-warning {
+            color: #212529;
+            background-color: #ffc107;
+        }
+        .btn-default .badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+        .badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+
+    </style>
+    <style>
+        .comment-area .item {
+            margin-top: 20px;
+        }
+
+        .comment-area .left-avatar {
+            float: left;
+            margin-right: 10px;
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #304659;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+        }
+
+        .comment-area .right-info {
+            padding-left: 35px;
+        }
+
+        .comment-area .right-info .desc .msg {
+            display: inline-block;
+            padding-right: 20px;
+            color: #8c8c8c;
+        }
+
+        .comment-area .child {
+            padding-left: 55px;
+        }
+
+        .comment-area .error-msg {
+            color: red;
+        }
+
+        .comment-area .reply-user {
+            display: inline-block;
+            background-color: #ddd;
+            color: black;
+            padding: 6px 8px;
+            margin-left: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid clearfix" style="padding: 20px 0;">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-search" aria-hidden="true"></i> 问题详情
+                </div>
+                <div class="panel-body">
+                    <form id="addIssuesForm" class="form-horizontal">
+                        {% csrf_token %}
+                        <!--问题类型-->
+                        <div class="form-group">
+                            <label for="{{ form.issues_type.id_for_label }}"
+                                   class="col-md-2 control-label">{{ form.issues_type.label }}</label>
+                            <div class="col-md-10">
+                                <div>
+                                    <div>
+                                        {{ form.issues_type }}
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                                <div class="error-msg"></div>
+                            </div>
+                        </div>
+                        <!--问题主题-->
+                        <div class="form-group">
+                            <label for="{{ form.subject.id_for_label }}"
+                                   class="col-md-2 control-label">{{ form.subject.label }}</label>
+                            <div class="col-md-10">
+                                <div>
+                                    <div>
+                                        {{ form.subject }}
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                                <div class="error-msg"></div>
+                            </div>
+                        </div>
+                        <!--模块-->
+                        <div class="form-group">
+                            <label for="{{ form.module.id_for_label }}"
+                                   class="col-md-2 control-label">{{ form.module.label }}</label>
+                            <div class="col-md-10">
+                                <div>
+                                    <div>
+                                        {{ form.module }}
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                                <div class="error-msg"></div>
+                            </div>
+                        </div>
+                        <!--问题描述-->
+                        <div class="form-group">
+                            <label for="{{ form.desc.id_for_label }}"
+                                   class="col-md-2 control-label">{{ form.desc.label }}</label>
+                            <div class="col-md-10">
+                                <div>
+                                    <div id="descEditor">
+                                        {{ form.desc }}
+                                    </div>
+
+                                    <div class="error-msg"></div>
+                                </div>
+                                <div class="error-msg"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group clearfix">
+                            <!--问题状态-->
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ form.status.id_for_label }}"
+                                       class="col-md-4 control-label">{{ form.status.label }}</label>
+                                <div class="col-md-8 clearfix">
+                                    <div>
+                                        {{ form.status }}
+                                    </div>
+                                    <div class="error-msg"></div>
+
+                                </div>
+                            </div>
+                            <!--问题优先级-->
+                            <div class="col-md-6 pd-0">
+                                <label for=" {{ form.priority.id_for_label }}"
+                                       class="col-md-4 control-label">{{ form.priority.label }}</label>
+                                <div class="col-md-8">
+                                    <div>
+                                        {{ form.priority }}
+                                    </div>
+                                    <div class="error-msg"></div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group clearfix">
+                            <!--问题指派人-->
+                            <div class="col-md-6 pd-0">
+                                <label for="inputPassword3" class="col-md-4 control-label">指派给</label>
+                                <div class="col-md-8">
+                                    {{ form.assign }}   <!--会默认变成一个div-->
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                            <!--关注者-->
+                            <div class="col-md-6 pd-0">
+                                <label for="inputPassword3" class="col-md-4 control-label">关注者</label>
+                                <div class="col-md-8">
+                                    {{ form.attention }}  <!--会默认变成一个div-->
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group clearfix">
+                            <!--开始时间-->
+                            <div class="col-md-6 pd-0">
+                                <label for="inputPassword3" class="col-md-4 control-label">开始时间</label>
+                                <div class="col-md-8">
+
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="sizing-addon2">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                        </span>
+                                        {{ form.start_date }}
+                                    </div>
+                                    <span class="error-msg"></span>
+                                </div>
+                            </div>
+                            <!--截止时间-->
+                            <div class="col-md-6 pd-0">
+                                <label for="inputPassword3" class="col-md-4 control-label">截止时间</label>
+                                <div class="col-md-8">
+
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="sizing-addon2">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                        </span>
+                                        {{ form.end_date }}
+                                    </div>
+                                    <span class="error-msg"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <!--问题模式，公开还是私有-->
+                            <div class="col-md-6 pd-0">
+                                <label for="inputPassword3" class="col-md-4 control-label">模式</label>
+                                <div class="col-md-8">
+                                    <div>
+                                        {{ form.mode }}
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                            <!--父问题-->
+                            <div class="col-md-6 pd-0">
+                                <label for="inputPassword3" class="col-md-4 control-label"> 父问题</label>
+                                <div class="col-md-8">
+                                    {{ form.parent }}  <!--会默认变成一个div-->
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-search" aria-hidden="true"></i> 操作记录
+                </div>
+                <div class="panel-body comment-area">
+
+                    <div class="comment-list" style="font-size: 11px">
+                    <!--放置Ajax获取的问题变更记录和评论-->
+
+                    </div>
+
+                    <hr/>
+                    <div class="comment-text" id="commentText">
+                        <!--问题评论和回复-->
+                        <div class="form-group">
+                            <textarea id="content" rows="6" class="form-control" style="resize: none;"
+                                      placeholder="请输入要回复的内容"></textarea>
+                            <span class="error-msg"></span>
+                        </div>
+
+                        <input class="btn btn-primary" type="button" id="btnReplySubmit" value="提 交">
+                        <div class="reply-user hide" id="replyUser">
+                            回复 <span></span>
+                            <i class="fa fa-times-circle" aria-hidden="true" style="color: #9d9d9d;"></i>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!--问题和评论模板-->
+    <div class="hide" id="recordTemplate">
+        <div class="item clearfix">
+            <!--头像-->
+            <div class="left-avatar"></div>
+            <div class="right-info">
+                <!--评论内容-->
+                <pre></pre>
+                <div class="desc">
+                    <div class="msg">
+                        <i class="fa fa-bullhorn" aria-hidden="true"></i>
+                        <!--类型，是问题变更记录还是评论-->
+                        <span class="type"></span>
+                    </div>
+                    <div class="msg">
+                        <i class="fa fa-user-o" aria-hidden="true"></i>
+                        <!--用户名-->
+                        <span class="user"></span>
+                    </div>
+                    <div class="msg">
+                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                        <!--更新时间-->
+                        <span class="date"></span>
+                    </div>
+
+                    <a href="#commentText" class="reply">
+                        <!--回复按钮-->
+                        <i class="fa fa-commenting-o" aria-hidden="true"></i> 回复
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="child">
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugin/editor-md/editormd.min.js' %}"></script>
+    <script src="{% static 'plugin/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'plugin/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <script src="{% static 'plugin/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'plugin/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
+    <script>
+        //图片上传的url
+        var WIKI_UPLOAD_URL = "{% url 'web:wiki_upload' project_id=request.tracer.project.id %}";
+        // 获取所有问题和评论的url
+        var ISSUES_RECORD_APT = "{% url 'web:issues_record' request.tracer.project.id issues_object.id %}";
+        // markdown编辑器的对象，便于获取编辑器中的值
+        var EDITOR;
+        // 问题变更的url
+        var ISSUES_CHANGE_APT = "{% url 'web:issues_change' request.tracer.project.id issues_object.id %}";
+
+        $(function () {
+            initDescEditorMd();  // 初始化markdown编辑器
+            initDatePicker();  // 初始化时间选择器
+            InitIssuesRecord();  // 初始化问题变更和评论
+            bindReply();   // 回复评论
+            bindCancelReplyUser();  // 取消回复
+            bindBtnReplySubmit();  //提交评论
+            bindIssuesChange(); //问题变更
+        });
+        /*
+        添加对话框：初始化时间选择
+         */
+        function initDatePicker() {
+            // 这两个id是form表单生成的input框的id
+            $('#id_start_date,#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '0',  // 只能从当前时间往后
+                language: "zh-CN",
+                autoclose: true,  // 点击其他区域时自动关闭
+            });
+        }
+
+        // 将text area标签转化为markdown编辑器
+        // 初始化markdown编辑器
+        function initDescEditorMd() {
+            EDITOR = editormd('descEditor',{
+                    placeholder: "请输入内容",
+                    height: 300,
+                    path: "{% static 'plugin/editor-md/lib/' %}",
+                    imageUpload:true,
+                    imageFormats: ["jpg",'jpeg','png','gif'],
+                    imageUploadURL: WIKI_UPLOAD_URL,
+                    toolbarAutoFixed: false,  // 取消工具栏始终置顶
+                    toolbarIcons: function () {
+                        return ["bold", "hr", "del", "italic", "quote", "|", "image", "preview", "watch", "fullscreen", "||", "save"]
+                    },
+                    toolbarCustomIcons: {
+                        save: "<input type='button' value='保 存' class='btn btn-success btn-sm' onclick='saveDesc();' />"
+                    },
+                    // 默认加载时是预览状态
+                    onload: function () {
+                        this.previewing();
+                    }
+            })
+        }
+
+        /*
+        评论和问题变更初始化
+         */
+        function InitIssuesRecord() {
+            $.get(ISSUES_RECORD_APT, function (res) {
+                if (res.status) {
+                    // console.log(res);
+                    $.each(res.data, function (index, item) {
+                            createRecordNode(item);
+                        })
+                } else {
+                    alert('初始化失败');
+                }
+            })
+        }
+        /*
+        创建操作记录节点
+         */
+        function createRecordNode(nodeDict) {
+            var $item = $("#recordTemplate").find('.item').clone();
+            /*html() 方法设置或返回被选元素的内容（innerHTML）。
+            当该方法用于返回内容时，则返回第一个匹配元素的内容。
+            当该方法用于设置内容时，则重写所有匹配元素的内容。
+            提示：如只需设置或返回被选元素的文本内容，请使用 text() 方法*/
+            $item.find('.left-avatar').html(nodeDict.creator[0].toUpperCase());
+            $item.find('pre').html(nodeDict.content);  // 重写span标签中的内容
+            $item.find('.user').html(nodeDict.creator);
+            $item.find('.type').html(nodeDict.reply_type_text);
+            $item.find('.date').html(nodeDict.datetime);
+            $item.attr({id: nodeDict.id, username: nodeDict.creator});
+
+            if (nodeDict.parent_id) {
+                // 挂在谁下
+                $('#' + nodeDict.parent_id).children('.child').append($item);
+            } else {
+                // 根下
+                $('.comment-list').append($item);
+            }
+        }
+        /*
+        回复问题
+         */
+        function bindReply() {
+            $('.comment-list').on('click', '.reply', function () {
+                var $item = $(this).parent().parent().parent();
+                var id = $item.attr('id');
+                var username = $item.attr('username');
+                $('#replyUser').removeClass('hide').attr('parent-id', id).children('span').text(username);
+            })
+        }
+
+        /*
+        取消回复
+         */
+        function bindCancelReplyUser() {
+
+            $('#replyUser').click(function () {
+                $(this).addClass('hide').removeAttr('parent-id').children('span').text("");
+            })
+        }
+        /*
+        提交回复
+         */
+        function bindBtnReplySubmit() {
+            $("#btnReplySubmit").click(function () {
+                $.post(ISSUES_RECORD_APT,{
+                    content: $('#content').val(),
+                    parent_id: $("#replyUser").attr('parent-id')
+                },function (res) {
+                    // console.log(res);
+                    if (res.status){
+                        // 添加节点
+                        createRecordNode(res.data);
+                        // 回复框中的内容清空
+                        $('#content').val('');
+                        $('#replyUser').addClass('hide').removeAttr('parent-id').children('span').text("");
+                    } else {
+                        alert(res.error);
+                    }
+                })
+            })
+
+        }
+        /*
+        问题变更绑定事件
+         */
+        function bindIssuesChange(){
+            // 表单中的每一个input框在展示的时候后台通过BootstrapForm类加上了class:form-control类属性
+            $("#addIssuesForm").find(".form-control").change(function () {
+                //获取变更之后的值
+                var postDict = {name: $(this).attr('name'), value: $(this).val()};
+                // console.log(postDict);
+                postAjaxData(postDict);
+            })
+        }
+        // markdown编辑器的保存按钮事件
+        function saveDesc() {
+            var postDict = {name: $("#id_desc").attr('name'), value: EDITOR.getValue()};
+                // console.log(postDict);
+                postAjaxData(postDict);
+        }
+
+        function postAjaxData(postDict) {
+            // 发送请求之前先清空上次的错误信息
+            $('#id_'+ postDict.name).parent().next('.error-msg').text('');
+
+            $.ajax({
+                url: ISSUES_CHANGE_APT,
+                type: 'POST',
+                header: {
+                    "Content-Type": "application/json;charset=utf-8"
+                },
+                data: JSON.stringify(postDict),
+                dataType: "JSON",
+                success: function (res) {
+                    //console.log(res);
+                    if (res.status){
+                        createRecordNode(res.data);
+                    } else {
+                        $('#id_'+ postDict.name).parent().next('.error-msg').text(res.error);
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'web/layout/manage.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/project_list.css' %}">
+{% endblock %}
+
+{% block title %}项目列表{% endblock %}
+
+{% block content %}
+    <div class="container project">
+        <a href="" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;新建项目
+        </a><br/><br/>
+
+        <div class="panel panel-info">
+            <div class="panel-heading"><i class="fa fa-star" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;&nbsp;星标项目</div>
+            <div class="panel-body">
+                {% for item in project_dict.star %}
+                    <div class="item">
+                        <a href="{% url 'web:dashboard' item.value.id %}" class="title"
+                           style="background-color: {{ item.value.get_color_display }};">{{ item.value.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="{% url 'web:project_unstar' project_type=item.type project_id=item.value.id %}">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                                </a>
+                                <span>{{ item.value.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.value.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel panel-warning">
+            <div class="panel-heading"><i class="fa fa-list" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;&nbsp;我创建的</div>
+            <div class="panel-body">
+                {% for item in project_dict.my %}
+                    <div class="item">
+                        <a href="{% url 'web:dashboard' item.id %}" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="{% url 'web:project_star' 'my' item.id %}">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #9d9d9d;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel panel-danger">
+            <div class="panel-heading"><i class="fa fa-handshake-o" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;&nbsp;我参与的</div>
+            <div class="panel-body">
+                {% for item in project_dict.join %}
+                    <div class="item">
+                        <a href="{% url 'web:dashboard' item.id %}" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="{% url 'web:project_star' 'join' item.id %}">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #9d9d9d;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">新建项目</h4>
+          </div>
+          <div class="modal-body">
+            <form id="addProject">
+                {% csrf_token %}
+                {% for field in form %}
+                  <div class="form-group">
+                    <label for="{{ field.id_for_label }}" >{{ field.label }}</label>
+                    {{ field }}
+                    <span class="error-msg"></span>
+                  </div>
+                {% endfor %}
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取&nbsp;&nbsp;&nbsp;&nbsp;消</button>
+            <button type="button" class="btn btn-primary" id="btnProjectSubmit">确&nbsp;&nbsp;&nbsp;&nbsp;定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+     $(function () {
+         BindClickBtnSubmit();
+     });
+     // 添加项目
+     function BindClickBtnSubmit(){
+         $('#btnProjectSubmit').click(function () {
+            $.ajax({
+                url: "{% url 'web:project_list' %}",
+                type: "POST",
+                data: $('#addProject').serialize(),
+                dataType: "JSON",
+                success:function (res) {
+                    if (res.status){
+                        // 添加成功之后刷新页面
+                        {#alert('添加成功');#}
+                        location.href = location.href;
+                        //location.reload();
+                    }else{
+                        $.each(res.error, function (key, value) {
+                            $("#id_"+key).next().text(value[0]);
+                        })
+                    }
+                }
+            })
+        })
+     }
+
+    </script>
+{% endblock %}

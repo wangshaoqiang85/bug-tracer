@@ -1,0 +1,28 @@
+
+<li class="dropdown active">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+        项目 {% if request.tracer.project.name %} ({{ request.tracer.project.name }}) {% endif %}<span class="caret"></span></a>
+    <ul class="dropdown-menu">
+        {# 我创建的项目 #}
+        <li><i class="fa fa-list" aria-hidden="true"></i>&nbsp;&nbsp;我创建的</li>
+        <li role="separator" class="divider"></li>
+        {% for item in my %}
+            <li><a href="{% url 'web:dashboard' item.id %}">{{ item.name }}</a></li>
+        {% empty %}
+            <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;无</li>
+        {% endfor %}
+        <li role="separator" class="divider"></li>
+
+        {# 我参与的项目 #}
+        <li><i class="fa fa-handshake-o" aria-hidden="true"></i>&nbsp;&nbsp;我参与的</li>
+        <li role="separator" class="divider"></li>
+        {% for item in join %}
+            <li><a href="{% url 'web:dashboard' item.project.id %}">{{ item.project.name }}</a></li>
+        {% empty %}
+            <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;无</li>
+        {% endfor %}
+        <li role="separator" class="divider"></li>
+        <li><a href="{% url 'web:project_list' %}">所有项目</a></li>
+    </ul>
+</li>
+

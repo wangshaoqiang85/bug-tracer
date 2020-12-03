@@ -1,0 +1,58 @@
+{% extends 'web/wiki.html' %}
+{% load static %}
+{% block editor_css %}
+<link rel="stylesheet" href="{% static 'plugin/editor-md/css/editormd.min.css' %}">
+    <style>
+        .editormd-fullscreen{
+            z-index: 1001;
+        }
+    </style>
+{% endblock %}
+{% block title %}新建Wiki文章{% endblock %}
+
+{% block wiki_add %}
+    <br/>
+    <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {% if field.name == 'content' %}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}：</label>
+                    <div id="editor">
+                        {{ field }}
+                    </div>
+                    {#span标签中的是错误信息#}
+                    <span class="error-msg">{{ field.errors.0 }}</span>
+                {%  else %}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}：</label>
+                    {{ field }}
+                    {#span标签中的是错误信息#}
+                    <span class="error-msg">{{ field.errors.0 }}</span>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">提  交</button>
+    </form>
+{% endblock %}
+
+{% block editor_js %}
+    <script src="{% static 'plugin/editor-md/editormd.min.js' %}"></script>
+        <script>
+        $(function () {
+            initEditorMd();
+        });
+        // 将text area标签转化为markdown编辑器
+        var WIKI_UPLOAD_URL = "{% url 'web:wiki_upload' request.tracer.project.id %}";
+        function initEditorMd() {
+            editormd('editor',{
+                placeholder: "请输入内容",
+                height: 500,
+                path: "{% static 'plugin/editor-md/lib/' %}",
+                imageUpload:true,
+                imageFormats: ["jpg",'jpeg','png','gif'],
+                imageUploadURL: WIKI_UPLOAD_URL,
+            })
+        }
+    </script>
+{% endblock %}

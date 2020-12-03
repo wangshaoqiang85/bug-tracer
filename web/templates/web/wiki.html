@@ -1,0 +1,174 @@
+{% extends 'web/layout/manage.html'%}
+{% load static %}
+{% block css %}
+    {# form表单中编辑器的css样式 #}
+    {% block editor_css %}{% endblock %}
+    {# 以markdown形式显示文章内容 #}
+    <link rel="stylesheet" href="{% static 'plugin/editor-md/css/editormd.preview.min.css' %}">
+
+    <style>
+        .panel-info {
+            margin-top: 10px;
+        }
+
+        .panel-info .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .panel-body {
+            padding: 0;
+        }
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px;
+        }
+        .title-list ul {
+            padding-left: 15px;
+        }
+
+        .title-list ul a {
+            display: block;
+            padding: 5px 0;
+        }
+        .content {
+                border-left: 1px solid #dddddd;
+                min-height: 600px;
+                margin-left: -1px;
+        }
+    </style>
+{% endblock %}
+
+{% block title %}Wiki文章{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <div>
+                    <i class="fa fa-list" aria-hidden="true"></i>  WIKI文档库
+                </div>
+                <div class="function">
+                    <a type="button" class="btn btn-success btn-xs"
+                       href="{% url 'web:wiki_add' request.tracer.project.id %}">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
+                    </a>&nbsp;&nbsp;
+                    {% if wiki_object %}
+                         <a type="button" class="btn btn-primary btn-xs"
+                        href="{% url 'web:wiki_edit' request.tracer.project.id wiki_object.id %}">
+                            <i class="fa fa-edit" aria-hidden="true"></i> 编辑
+                        </a>&nbsp;&nbsp;
+
+                        <a type="button" class="btn btn-danger btn-xs"
+                        href="{% url 'web:wiki_delete' request.tracer.project.id wiki_object.id %}">
+                            <i class="fa fa-trash" aria-hidden="true"></i> 删除
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="col-sm-3 title-list">
+                    <h4>文章目录</h4>
+                    <ul id="catalog">
+                        <!--页面向后台发送Ajax请求获取文章目录并显示-->
+                    </ul>
+                </div>
+                <div class="col-sm-9 content">
+                    {% block wiki_add %}
+                        {# 如果进去文章详情，就显示文章内容 #}
+                        {% if wiki_object %}
+                            <h1>{{ wiki_object.title }}</h1>
+                            <div id="editor_preview">
+                                <textarea>{{ wiki_object.content }}</textarea>
+                            </div>
+
+                        {# 如果不是文章详情，就显示Wiki首页 #}
+                        {% else %}
+                         <div style="text-align: center;margin-top: 50px">
+                            <h4>《{{ request.tracer.project.name }}》wiki文档库</h4>
+                            <a href="{% url 'web:wiki_add' request.tracer.project.id %}">
+                                <i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;&nbsp;新建文章
+                            </a>
+                        </div>
+                        {% endif %}
+
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    {# form表单中编辑器的js样式 #}
+    {% block editor_js %}{% endblock %}
+
+    {# 以markdown形式显示文章内容 #}
+    <script src="{% static 'plugin/editor-md/editormd.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/marked.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/prettify.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/raphael.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/underscore.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/sequence-diagram.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/flowchart.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/lib/jquery.flowchart.min.js' %}"></script>
+
+    <script>
+        $(function () {
+            initCataLog();  // 显示目录
+
+            initPreviewMarkdown();  //以markdown显示文章内容
+
+        });
+
+        /*
+        * 显示目录*/
+        // 127.0.0.1:8000/manage/2/wiki/
+        var WIKI_DETAIL_URL = "{% url 'web:wiki' request.tracer.project.id %}";
+        function initCataLog() {
+            $.ajax({
+                url: "{% url 'web:wiki_catalog' request.tracer.project.id%}",
+                data: '',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (res) {
+                    if (res.status){
+                        // console.log(res);
+                        $.each(res.data, function (index, item) {
+                            // 没有父级文章id
+                            if (!item.parent_id){
+                                var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id;
+                                // 在ul标签中添加li标签，这个li标签中添加a标签和ul标签
+                                var li = $("<li>").attr('id', "id" + item.id).append($('<a>').text(item.title).attr('href', href)).append($('<ul>'));
+                                $('#catalog').append(li);
+                            }else {
+                                // 有父级文章id
+                                href = WIKI_DETAIL_URL + "?wiki_id=" + item.id;
+                                var li = $("<li>").attr('id', "id" + item.id).append($('<a>').text(item.title).attr('href', href)).append($('<ul>'));
+                                $('#id' + item.parent_id).children("ul").append(li);
+
+                            }
+                        })
+
+                    }else{
+                        alert('初始化目录失败');
+                    }
+
+                }
+            })
+
+        }
+
+        /*
+        //以markdown显示文章内容
+         */
+        function initPreviewMarkdown() {
+            editormd.markdownToHTML('editor_preview', {
+                // 防止style, script, iframe三种形式的攻击
+                htmlDebode: 'style, script, iframe'
+            });
+
+        }
+    </script>
+{% endblock %}

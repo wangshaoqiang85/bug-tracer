@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>无标题文档</title>
+<script>
+function show(){
+    var show_part = document.querySelector('.part');
+    show_part.style.display = 'block';
+    }
+function hide(){
+    var show_part = document.querySelector('.part');
+    show_part.style.display = 'none';
+    location.reload();  // 刷新页面
+    }
+
+</script>
+<style>
+.whole{
+    background-color:blue;
+    height:500px;
+    width:500px;
+    }
+
+.part{
+    display:none;
+    background-color:red;
+    height:200px;
+    width:200px;
+    position:relative;
+    margin:20%;
+    }
+</style>
+</head>
+
+<body>
+<div class="whole">
+<button onClick="show()">点我弹出</button>
+
+<div class="part">
+这里是弹窗
+<button onClick="hide()">点我隐藏</button>
+<div>
+</div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册页面</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+{#<script src="./js/jquery-1.12.4.min.js"></script>#}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
+        .account{
+            width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h2 style="text-align: center;">注册</h2>
+    <form>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>用户名：</label>
+            <input type="text" class="form-control" placeholder="请输入用户名" name="username" value="">
+            <label>邮箱：</label>
+            <input type="text" class="form-control" placeholder="请输入邮箱" name="email" value="">
+            <label>密码：</label>
+            <input type="text" class="form-control" placeholder="请输入密码" name="password" value="">
+
+            <label>重复密码：</label>
+            <input type="text" class="form-control" placeholder="请再次输入密码" name="confirm_password" value="">
+            <label>手机号：</label>
+            <input type="text" class="form-control" placeholder="请输入手机号" name="mobile_phone" v-model="phone">
+
+            <label>验证码：</label>
+            <div class="clearfix">
+                <div class="col-md-7" style="padding-left: 0;">
+                    <input type="text" class="form-control" placeholder="请输入验证码" name="yanzhen" value="">
+                </div>
+                <div class="col-md-4" style="padding-right: 0;"><button type="submit" @click="send_message" class="btn btn-primary">点击获取验证码</button></div>
+            </div>
+        </div>
+      <button type="submit" class="btn btn-primary">注册</button>
+    </form>
+</div>
+
+<!-- 导入axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+<script>
+    function getCookie (name) {
+      var value = '; ' + document.cookie;
+      var parts = value.split('; ' + name + '=');
+      if (parts.length === 2) return parts.pop().split(';').shift()
+    }
+    var app = new Vue({
+        el:'.account',
+        data:{
+            phone:'',
+        },
+        methods:{
+            getCookie(name) {
+                var value = '; ' + document.cookie;
+                var parts = value.split('; ' + name + '=');
+                if (parts.length === 2) return parts.pop().split(';').shift()
+            },
+            send_message:function () {
+                let param = new URLSearchParams();
+                param.append('phone',this.phone);
+                {#alert(this.phone);#}
+                axios.post(
+                    '/app01/send_mes',
+                    param, {headers: {'X-CSRFToken': this.getCookie('csrftoken')}}
+                    )
+                    .then(function (data) {
+                        {#data = data.data;#}
+                        {#alert(data.data.name);#}
+                        console.log(data.data);
+                    },function (err) {
+                        console.log(err);
+                    })
+            }
+        }
+    })
+</script>
+</body>
+</html>

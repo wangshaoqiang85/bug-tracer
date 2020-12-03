@@ -1,0 +1,64 @@
+{% extends 'web/setting.html' %}
+{% block title %}我的资料{% endblock %}
+
+{% block setting_content %}
+    <form class="form-horizontal" method="post" id="changePwdForm">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="col-sm-2 control-label">原密码</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" placeholder="" name="password" id="password">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">新密码</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" placeholder="" name="new_password" id="new_password">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">确认新密码</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" placeholder="" name="new_confirm_password" id="new_confirm_password">
+            </div>
+        </div>
+        <div class="col-sm-offset-2 col-sm-5">
+            <button class="btn btn-primary" id="btnChangePwd">确认修改</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block js %}
+    <script>
+    //页面加载完成之后自动执行的函数
+    $(function () {
+        bindClickChangePwd();
+    });
+    /*
+    点击修改密码
+    */
+    function bindClickChangePwd() {
+        $("#btnChangePwd").click(function () {
+            //收集表单中的数据（找到每一个input标签）
+            //使用Ajax发送post请求到后台
+            $.ajax({
+                url:"{% url 'web:setting_change_pwd' request.tracer.project.id %}",
+                type: "POST",
+                data: $('#changePwdForm').serialize(),  //遍历form表单中的所有input字段，包括crsf_token
+                dataType: "JSON",
+                success:function (res) {
+                    if (res.status){
+                        //验证成功,跳转到登录页面
+                        alert('修改成功！');
+                        location.reload();
+                    }else{
+                        alert('修改失败，请确认重新输入！');
+                        location.reload();
+                    }
+                }
+            })
+        })
+    }
+    </script>
+{% endblock %}
+

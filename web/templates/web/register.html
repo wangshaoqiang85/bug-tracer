@@ -1,0 +1,147 @@
+{% extends 'web/layout/basic.html' %}
+{% load static %}
+{% block title %} 注册页面{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/account.css' %}">
+    <style>
+         .error-msg{
+             color: red;
+             position: absolute;
+             font-size: 13px;
+         }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="account">
+        <div class="title">用户注册</div>
+        <form id="regForm" method="POST" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.name == 'code' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="row">
+                            <div class="col-xs-7">
+                                {{ field }}
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-xs-5">
+                                <input id="btnSms" type="button" class="btn btn-primary" value="发送邮箱验证码">
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {#span标签中的是错误信息#}
+                        <span class="error-msg"></span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="row">
+                <div class="col-xs-3">
+                    <input id="btnSubmit" type="button" class="btn btn-primary" value="注  册"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+    //页面加载完成之后自动执行的函数
+    $(function () {
+        bindClickBtnSms();
+        bindClickSubmit();
+    });
+    /*
+    点击提交注册
+    */
+    function bindClickSubmit() {
+        $("#btnSubmit").click(function () {
+            $('.error-msg').empty();
+            //收集表单中的数据（找到每一个input标签）
+            //使用Ajax发送post请求到后台
+            $.ajax({
+                url:"{% url 'web:register' %}",
+                type: "POST",
+                data: $('#regForm').serialize(),  //遍历form表单中的所有input字段，包括crsf_token
+                dataType: "JSON",
+                success:function (res) {
+                    if (res.status){
+                        //验证成功,跳转到登录页面
+                        location.href = res.data;
+                        //location.href = '{% url 'web:login_sms' %}';
+                    }else{
+                        //返回的error形式是 {status:False,error:{mobile_phone:['错误信息',,,,,], code:["错误信息",],,,,}
+                        $.each(res.error, function (key, value) {
+                            $("#id_"+key).next().text(value[0]);
+                        })
+                    }
+                }
+            })
+        })
+    }
+
+    /*
+    点击获取验证码的按钮绑定事件
+     */
+    function bindClickBtnSms() {
+        $('#btnSms').click(function () {
+
+            //在点击发送验证码之前先清空之前的错误信息
+            $(".error-msg").empty();
+
+            //根据id获取用户的手机号
+            var email = $('#id_email').val();
+
+            //发送ajax请求
+            $.ajax({
+                url: "{% url 'web:send_sms' %}",  //处理请求的路由
+                type: "GET",
+                data: { email: email, tpl: "register"},
+                dataType: "JSON",  // 将服务端返回的数据反序列化为字典（Ajax默认执行）
+                success: function (res) {
+                    //Ajax请求发送成功之后，自动执行的函数，res就是后端返回的值
+                    {#alert(res);#}
+                    if(res.status){
+                        //发送成功，显示倒计时
+                        // alert("发送成功")
+                        sendSmsRemind();
+                    }
+                    else{
+                        //错误信息
+                        //返回的error形式是 {status:False,error:{mobile_phone:['错误信息',,,,,], code:["错误信息",],,,,}
+                        $.each(res.error, function (key, value) {
+                            $("#id_"+key).next().text(value[0]);
+                        })
+                    }
+                }
+            })
+        })
+    }
+    /*
+    发送验证码之后的倒计时
+     */
+    function sendSmsRemind() {
+        var $smsBtn = $("#btnSms");
+        $smsBtn.prop('disabled',true);
+
+        var time = 300;
+        var remind = setInterval(function () {
+            $smsBtn.val(time+"秒后重新发送");
+            time = time - 1;
+            if (time < 1){
+                clearInterval(remind);
+                $smsBtn.val('点击获取验证码').prop('disabled',false)
+            }
+        }, 1000)
+    }
+    </script>
+{% endblock %}
